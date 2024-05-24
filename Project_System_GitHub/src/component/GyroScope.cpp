@@ -2,6 +2,7 @@
 
 #include <Arduino.h>
 #include <Wire.h>
+#include <math.h>
 
 const int MPU_ADDR = 0x68;
 
@@ -29,6 +30,10 @@ void GyroScope::generate()
 	accelerometer_x_ = Wire.read() << 8 | Wire.read();
 	accelerometer_y_ = Wire.read() << 8 | Wire.read();
 	accelerometer_z_ = Wire.read() << 8 | Wire.read();
+}
+
+double Gyroscope::get_angle(){
+    return double pitch = atan2(accelerometer_y(), sqrt(pow(accelerometer_x(), 2) + pow(accelerometer_z(), 2))); // Calculation to get the pitch from the acceleration
 }
 
 int GyroScope::angle_x() const

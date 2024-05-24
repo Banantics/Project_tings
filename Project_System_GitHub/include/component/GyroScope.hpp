@@ -8,9 +8,10 @@ class GyroScope
 
 		void GyroScope::generate();
 
-		int GyroScope::angle_x() const;
-		int GyroScope::angle_y() const;
-		int GyroScope::angle_z() const;
+		int GyroScope::accelerometer_x() const;
+		int GyroScope::accelerometer_y() const;
+		int GyroScope::accelerometer_z() const;
+        double GyroScope::get_angle() const;
 	
 	private:
 		int accelerometer_x_;
