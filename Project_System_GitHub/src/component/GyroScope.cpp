@@ -36,17 +36,17 @@ double Gyroscope::get_angle(){
     return double pitch = atan2(accelerometer_y(), sqrt(pow(accelerometer_x(), 2) + pow(accelerometer_z(), 2))); // Calculation to get the pitch from the acceleration
 }
 
-int GyroScope::angle_x() const
+int GyroScope::accelerator_x() const
 {
 	return accelerometer_x_;
 }
 
-int GyroScope::angle_y() const
+int GyroScope::accelerator_y() const
 {
 	return accelerometer_y_;
 }
 
-int GyroScope::angle_z() const
+int GyroScope::accelerator_z() const
 {
 	return accelerometer_z_;
 }
