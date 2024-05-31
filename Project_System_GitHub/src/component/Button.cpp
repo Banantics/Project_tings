@@ -8,7 +8,7 @@ Button::Button(const int pin) :
 	if (pin_ != 0) pinMode(pin_, INPUT);
 }
 
-bool Button::pressed()
+bool Button::pressed() const
 {
 	const int DEBOUNCE_MS = 10;
 

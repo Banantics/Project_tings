@@ -1,6 +1,7 @@
 #include "component/Buzzer.hpp"
 
 #include <Arduino.h>
+#include <math.h>
 
 Buzzer::Buzzer(const int pin) :
 	pin_{pin}
@@ -8,11 +9,30 @@ Buzzer::Buzzer(const int pin) :
 	if (pin_ != 0) pinMode(pin_, OUTPUT);
 }
 
-void Buzzer::play(int note, int duration) const
+bool Buzzer::play(const int note, const int duration, const int tempo, bool stop) const
 {
-	duration = 1000 / duration;
-	tone(pin_, note, duration);
-	int pause = duration * 1.30;
-	delay(pause);
-	noTone(pin_);
+	static bool playing_note = false;
+	static unsigned long prev_mil = 0;
+
+	if (!playing_note)
+	{
+		playing_note = true;
+		prev_mil = millis();
+
+		tone(pin_, note);
+	}
+
+	unsigned long curr_mil = millis();
+	unsigned long whole_note = ((60000 * 4) / tempo) / abs(duration);
+	if (duration < 0)
+		whole_note *= 1.5;
+
+	if ((playing_note && curr_mil - prev_mil > whole_note) || stop)
+	{
+		noTone(pin_);
+		playing_note = false;
+		return true;
+	}
+	
+	return false;
 }

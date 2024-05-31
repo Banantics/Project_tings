@@ -8,6 +8,22 @@ void setup()
 
 void loop()
 {
+	/* (60000 * 4) / tempo;static Car car{
+		Button(8),
+		Buzzer(7),
+		GyroScope(0, 0),
+		Infrared(0, 0, 0, 0, 0),
+		Motor(0, 0),
+		SServo(0),
+		UltraSound(0, 0)
+	};
+	static bool running = false;
+	delay(10);
+	if (car.is_button_pressed()) running = !running;
+	if (!running) { car.play_music(false); return; }
+	car.play_music(true);
+	running = false;*/
+
 	static Car car{
 		Button(4),
 		Buzzer(8),
@@ -20,13 +36,20 @@ void loop()
 	static bool running = false;
 
 	if (car.is_button_pressed())
+	{
 		running = !running;
+
+		car.play_stopping_music(-1);
+		car.play_driving_music(running ? 1 : -1);
+	}
+
+	car.play_driving_music(0);
+	car.play_stopping_music(0);
 
 	if (!running)
 	{
 		car.stop();
 		car.look_straight();
-		delay(10);
 		return;
 	}
 
@@ -34,9 +57,17 @@ void loop()
 	{
 		car.stop();
 		car.look_straight();
-		car.play_music();
+		car.play_stopping_music(1);
+		car.play_driving_music(-1);
 
 		running = false;
+		return;
+	}
+
+	static bool evade = false;
+	if (car.detects_obstacle(45, 50) || evade)
+	{
+		evade = car.evade_obstacle(40, 30, 750);
 		return;
 	}
 
@@ -49,12 +80,4 @@ void loop()
 		car.look_straight();
 	else if (car.is_any_on())
 		car.change_angle(11, 30);
-
-	if (car.detects_obstacle(45, 50))
-		car.evade_obstacle(40, 30, 750);
-
-	/*if (car.is_tilted(120))
-		*/
-
-	delay(10);
 }

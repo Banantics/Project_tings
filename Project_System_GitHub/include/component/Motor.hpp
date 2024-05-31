@@ -6,7 +6,7 @@ class Motor
 	public:
 		Motor(const int lpwm_pin, const int rpwm_pin);
 
-		void Motor::move(int speed) const;
+		void move(int speed) const;
 	
 	private:
 		const int lpwm_pin_;

@@ -2,6 +2,9 @@
 
 #include <Arduino.h>
 
+#include "music/AtDoomGate.hpp"
+#include "music/TakeOnMe.hpp"
+
 Car::Car(Button button, Buzzer buzzer, GyroScope gyroscope, Infrared infrared, Motor motor, SServo servo, UltraSound ultrasound) :
 	button_{button},
 	buzzer_{buzzer},
@@ -19,31 +22,84 @@ bool Car::is_button_pressed() const
 	return button_.pressed();
 }
 
-void Car::play_music() const
+// TODO Use Enums for states.
+void Car::play_driving_music(const int state) const
 {
-	const int G3 = 196;
-	const int A3 = 220;
-	const int B3 = 247;
-	const int C4 = 262;
+	static int index = -1;
+	static int chord_index = 0;
+	static int repeat_count = 0;
 
-	struct
+	if (state == 1)
 	{
-		int note;
-		int duration;
-	} melody[] =
+		buzzer_.play(0, 0, 0, true);
+		index = 0;
+		chord_index = 0;
+		repeat_count = 0;
+	}
+	else if ((state == 0 && index == -1) || state == -1)
 	{
-		{C4, 4},
-		{G3, 8},
-		{G3, 8},
-		{A3, 4},
-		{G3, 4},
-		{0 , 4},
-		{B3, 4},
-		{C4, 4}
-	};
-	const int len = sizeof(melody) / sizeof(melody[0]);
-	for (int i = 0; i < len; i++)
-		buzzer_.play(melody[i].note, melody[i].duration);
+		if (state == -1)
+		{
+			index = -1;
+			buzzer_.play(0, 0, 0, true);
+		}
+		return;
+	}
+
+	const int note = at_doom_gate[index].chords[chord_index].note;
+	const int duration = at_doom_gate[index].chords[chord_index].duration;
+	const int tempo = at_doom_gate_tempo;
+	bool finished_playing_note = buzzer_.play(note, duration, tempo, false);
+
+	if (finished_playing_note) 
+		chord_index += 1;
+
+	if (chord_index == at_doom_gate[index].chord_len)
+	{
+		repeat_count += 1;
+		chord_index = 0;
+	}
+
+	if (repeat_count == at_doom_gate[index].repeat)
+	{
+		index += 1;
+		repeat_count = 0;
+		chord_index = 0;
+	}
+
+	if (index == at_doom_gate_len)
+		index = 0;
+}
+
+void Car::play_stopping_music(const int state) const
+{
+	static int index = -1;
+
+	if (state == 1)
+	{
+		buzzer_.play(0, 0, 0, true);
+		index = 0;
+	}
+	else if ((state == 0 && index == -1) || state == -1)
+	{
+		if (state == -1)
+		{
+			index = -1;
+			buzzer_.play(0, 0, 0, true);
+		}
+		return;
+	}
+
+	const int note = take_on_me.chords[index].note;
+	const int duration = take_on_me.chords[index].duration;
+	const int tempo = take_on_me_tempo;
+	bool finished_playing_note = buzzer_.play(note, duration, tempo, false);
+
+	if (finished_playing_note) 
+		index += 1;
+
+	if (index == take_on_me.chord_len)
+		index = 0;
 }
 
 // TODO GyroScope
@@ -63,7 +119,7 @@ bool Car::is_any_on() const
 	return infrared_.direction() != 0;
 }
 
-const int Car::change_angle(const int slight, const int far) const
+void Car::change_angle(const int slight, const int far) const
 {
 	const int direction = infrared_.direction();
 	const int slight_angle = !!(direction & 0b01000) * (-slight) + !!(direction & 0b00010) * slight;
@@ -90,17 +146,40 @@ void Car::look_straight() const
 
 bool Car::detects_obstacle(const int closest, const int furthest) const
 {
-	const int distance = ultrasound_.distance();
+	const float distance = ultrasound_.distance();
+	if (distance == NAN)
+		return false;
+
 	return distance >= closest && distance <= furthest;
 }
 
-void Car::evade_obstacle(const int speed, const int angle, const int time) const
+bool Car::evade_obstacle(const int speed, const int angle, const int time) const
 {
+	static int state = 0;
+	static unsigned long prev_mil = 0;
+
+	if (state == 0)
+	{
+		state = 1;
+		prev_mil = millis();
+	}
+
+	unsigned long curr_mil = millis();
+
 	motor_.move(speed);
 
-	servo_.angle(-angle);
-	delay(time);
+	if (state == 1 && curr_mil - prev_mil > (unsigned long) time)
+	{
+		servo_.angle(-angle);
+		state = 2;
+	}
+	
+	if (state == 2 && curr_mil - prev_mil > ((unsigned long) time * 2))
+	{
+		servo_.angle(angle);
+		state = 0;
+		return true;
+	}
 
-	servo_.angle(angle);
-	delay(time);
+	return false;
 }
