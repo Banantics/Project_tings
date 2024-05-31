@@ -22,7 +22,7 @@ GyroScope::GyroScope(const int A4, const int A5)
 
 double GyroScope::pitch() const
 {
-	/*const int reg_43 = 0x43;
+	const int reg_43 = 0x43;
 	const int reg_request = 6;
 	Wire.beginTransmission(MPU_ADDR);
 	Wire.write(reg_43);
@@ -47,9 +47,6 @@ double GyroScope::pitch() const
 
 	previous_time = current_time;
 
-	static double yaw = yaw + z_gyroscope * elapsed_time;
-	double roll = (x_previous + x_gyroscope * elapsed_time) * 0.96 +;
-	double pitch = ;
-	return pitch;*/
-	return 0;
+	static double pitch = yaw + z_gyroscope * elapsed_time;
+	return pitch;
 }
