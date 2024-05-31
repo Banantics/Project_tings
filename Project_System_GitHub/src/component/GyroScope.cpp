@@ -6,9 +6,11 @@
 
 const int MPU_ADDR = 0x68;
 
-GyroScope::GyroScope()
+GyroScope::GyroScope(const int A4, const int A5)
 {
-	// TODO Be more explicit with A4/A5 pins instead of hardcoding it.
+	(void) A4;
+	(void) A5;
+
 	const int reg_6B = 0x6B;
 	const int place_0_into_6B = 0x00;
 	Wire.begin();
@@ -18,35 +20,33 @@ GyroScope::GyroScope()
 	Wire.endTransmission(true);
 }
 
-void GyroScope::generate()
+double GyroScope::pitch() const
 {
-	const int reg_3B = 0x3B;
-	const int reg_request = 7 * 2;
+	const int reg_43 = 0x43;
+	const int reg_request = 6;
 	Wire.beginTransmission(MPU_ADDR);
-	Wire.write(reg_3B);
+	Wire.write(reg_43);
 	Wire.endTransmission(false);
 	Wire.requestFrom(MPU_ADDR, reg_request, true);
 
-	accelerometer_x_ = Wire.read() << 8 | Wire.read();
-	accelerometer_y_ = Wire.read() << 8 | Wire.read();
-	accelerometer_z_ = Wire.read() << 8 | Wire.read();
-}
+	int current_time = millis();
+	static int previous_time = current_time;
+	int elapsed_time = current_time - previous_time;
 
-double Gyroscope::get_angle(){
-    return double pitch = atan2(accelerometer_y(), sqrt(pow(accelerometer_x(), 2) + pow(accelerometer_z(), 2))); // Calculation to get the pitch from the acceleration
-}
+	static int x_previous = 0;
+	static int y_previous = 0;
+	static int z_previous = 0;
 
-int GyroScope::accelerator_x() const
-{
-	return accelerometer_x_;
-}
+	int x_gyroscope = Wire.read() << 8 | Wire.read();
+	int y_gyroscope = Wire.read() << 8 | Wire.read();
+	int z_gyroscope = Wire.read() << 8 | Wire.read();
 
-int GyroScope::accelerator_y() const
-{
-	return accelerometer_y_;
-}
+	x_previous = ;
+	y_previous = y_previous + y_gyroscope * elapsed_time;
+	z_previous = z_previous + z_gyroscope * elapsed_time;
 
-int GyroScope::accelerator_z() const
-{
-	return accelerometer_z_;
+	previous_time = current_time;
+
+	static double pitch = yaw + z_gyroscope * elapsed_time;
+	return pitch;
 }

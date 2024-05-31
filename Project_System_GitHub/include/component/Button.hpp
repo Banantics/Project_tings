@@ -5,7 +5,7 @@ class Button
 {
 	public:
 		Button(const int pin);
-		bool pressed();
+		bool pressed() const;
 	
 	private:
 		const int pin_;

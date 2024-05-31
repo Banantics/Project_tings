@@ -4,19 +4,9 @@
 class GyroScope
 {
 	public:
-		GyroScope();
+		GyroScope(const int A4, const int A5);
 
-		void GyroScope::generate();
-
-		int GyroScope::accelerometer_x() const;
-		int GyroScope::accelerometer_y() const;
-		int GyroScope::accelerometer_z() const;
-        double GyroScope::get_angle() const;
-	
-	private:
-		int accelerometer_x_;
-		int accelerometer_y_;
-		int accelerometer_z_;
+		double pitch() const;
 };
 
 #endif // COMPONENT_GYROSCOPE_HPP
